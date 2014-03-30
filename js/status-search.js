@@ -47,16 +47,22 @@ function showSearchResults(search_text, results) {
     
     if(results.length > 0) {
         
+        // Tell them how many times their search text occurred
+        $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + results.length + ' times.</div>');
+        
         // Highlight the search text in each results and append them to the results section
         results.forEach(function(item) {
             
+            
+            
+                
             var pattern = new RegExp("(" + search_text + ")","gi"),
                 timestamp = (item.time) ? item.time : item.created_time,
                 owner_comment = '',
                 highlightHTML = "<strong><span class='text-danger'>$1</span></strong>";
 
             owner_comment = owner_comment.replace(pattern,highlightHTML);
-            
+                
             switch(getPostType(item)) {
             
                     case 'status':
