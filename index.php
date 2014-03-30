@@ -59,7 +59,17 @@
               <div class="alert alert-danger" style="display: none"><span class="text"></span></div>
             </div><!-- /.col-sm-4 -->
               
-              <div class="col-sm-4">          
+              <div class="col-sm-4"><!-- Ads -->          
+                  <div style="padding-bottom: 10px"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Status Search - Sidebar -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:300px;height:250px"
+     data-ad-client="ca-pub-9980664734667730"
+     data-ad-slot="9615421533"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+                  </div><!-- End ads -->
               <div class="panel panel-info">
                 <div class="panel-heading">
                   <h3 class="panel-title">Here's what you can search:</h3>
