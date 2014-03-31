@@ -15,7 +15,7 @@
     <div class="container">
       
         <h1>Status Search <span class="badge" style="position: relative; bottom: 15px">Beta</span></h1>
-        <p class="lead">Having trouble remembering if you've posted something or not? Search and see!</p>
+        <p class="lead">Want to find that link, video or status update you posted a long time ago? Type in key words and find it!</p>
           <p class="lead login-message" style="display:none">First thing's first:        
             <button id="login-button" type="button" onclick="authUser();" class="btn btn-primary btn-med" style="position: relative; bottom: 3px"><span class="glyphicon glyphicon-hand-right"></span>&nbsp; Connect to Facebook</button>
           </p>
@@ -24,13 +24,13 @@
             <div class="col-sm-8">          
               <div class="panel panel-info">
                 <div class="panel-heading">
-                  <h3 class="panel-title">Search for something you've said:</h3>
+                  <h3 class="panel-title">Search for posts by typing in a word you can remember:</h3>
                 </div>
                 <div class="panel-body">
                   <div class="row">
                       <div class="col-lg-12">
                         <div class="input-group">
-                          <input id="search_text" type="text" class="form-control" placeholder="Type in something you said in a post...">
+                          <input id="search_text" type="text" class="form-control" placeholder="Type in a word here...">
                           <span class="input-group-btn">
                             <button id="search_status_btn" class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search"></span> Search</button>
                           </span>
@@ -87,13 +87,13 @@
                         <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> Link Titles</h4>
                         <p class="list-group-item-text">These is so you can search for the title of the link you posted (e.g., The name of a YouTube video).</p>
                     </div>
+                    <div class="list-group-item">
+                        <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> Check-ins</h4>
+                        <p class="list-group-item-text">These are the places you check into or were checked into by friends.</p>
+                    </div>
                     <div class="list-group-item text-muted">
                         <h4 class="list-group-item-heading">App Posts</h4>
                         <p class="list-group-item-text">These are the status messages posted for you by apps like <strong>Instagram</strong>.</p>
-                    </div>
-                    <div class="list-group-item text-muted">
-                        <h4 class="list-group-item-heading">Check-ins</h4>
-                        <p class="list-group-item-text">These are the places you check into or were checked into by friends.</p>
                     </div>
                     <div class="list-group-item text-muted">
                         <h4 class="list-group-item-heading">Post Comments</h4>
