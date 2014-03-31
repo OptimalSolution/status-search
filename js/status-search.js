@@ -33,7 +33,7 @@ function getPostType(item) {
         return 'link';
     }
     else {
-        return 'unknown';
+        return 'generic';
     }    
 }
 
@@ -52,9 +52,6 @@ function showSearchResults(search_text, results) {
         
         // Highlight the search text in each results and append them to the results section
         results.forEach(function(item) {
-            
-            
-            
                 
             var pattern = new RegExp("(" + search_text + ")","gi"),
                 timestamp = (item.time) ? item.time : item.created_time,
@@ -74,16 +71,18 @@ function showSearchResults(search_text, results) {
                         post_image = (post_image) ? post_image : 'img/link.jpg';
                         $('.search_status .results').append('<div class="list-group-item media">\
             <a class="pull-left" href="https://facebook.com/' + item.link_id + '" target="_blank">\
-            <img class="media-object" src="'+ post_image +'" alt="Post image" width="75"></a>\
+            <img class="media-object" src="'+ post_image +'" alt="Post image" width="75"><small>' + $.timeago(item.time * 1000) + '</small></a>\
             <div class="media-body"><h4 class="media-heading">'+ item.title.replace(pattern,highlightHTML) +'</h4>'+ item.owner_comment.replace(pattern,highlightHTML) +'</div></div>')
                         break;
                     default:
+                        $('.search_status .results').append('<a href="https://facebook.com/' + item.post_id + '" class="list-group-item" target="_blank" ><b>' + $.timeago(item.time * 1000) + ':</b> ' + item.message.replace(pattern,highlightHTML) + '</a>');
+                        break;
             }
         });
     }
     else {
         // Tell them we couldn't find anything
-        $('.alert .text').html("Couldn't find any status messages with '" + search_text + "' in them.")
+        $('.alert .text').html("<span class='glyphicon glyphicon-exclamation-sign'></span> Couldn't find any status messages with '" + search_text + "' in them.")
                    .parent().slideDown('fast');
     }
     
@@ -137,13 +136,24 @@ function searchStatusMessages(search_text) {
     search_text = search_text.toLowerCase();
     ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);
 
+    /** News Feed search
+    SELECT call_to_action, message, actor_id, post_id, source_id, type, app_id, created_time, description FROM stream WHERE filter_key = 'nf' AND strpos(lower(message), 'bridal') >= 0
+    
+    ***/
+    
     FB.api('/fql', {q: {
         status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 0, 50", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             OR strpos(lower(title), '" + search_text + "') >= 0 \
             OR strpos(lower(summary), '" + search_text + "') >= 0) \
-        ORDER BY created_time DESC LIMIT 0, 50"
+        ORDER BY created_time DESC LIMIT 0, 50",
+        location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
+        wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
+FROM stream WHERE source_id = me() AND actor_id IN (select uid2 from \
+friend where uid1 = me()) AND strpos(lower(message), '" + search_text + "') >= 0 \
+order by created_time DESC LIMIT 10000"
         
                  }}, function(response) {
 
@@ -157,18 +167,38 @@ function processMultiQueryResults(data) {
     var all_data = [];
     data.forEach(function(result_set) {
         
-        // Process results for individual searches
-        if(result_set.name == 'status_results') {
-            result_set.fql_result_set.forEach(function(result) {
-                all_data.push(result);        
-            });
-        }
-        else if(result_set.name == 'link_results') {
-            result_set.fql_result_set.forEach(function(result) {
-                result.time = result.created_time; // Rename the timestamp for easy sorting
-                all_data.push(result);        
-            });
-        }        
+        result_set.fql_result_set.forEach(function(result) {
+            
+            // Consolidate all of the time variables into one for easy sorting
+            if(result.timestamp !== undefined) {   
+                result.time = result.timestamp; 
+            }
+            else if(result.created_time !== undefined) {
+                result.time = result.created_time;
+            }
+            
+            // Consolidate all of the post_id variables into one for easy linking
+            if(result.id !== undefined) {   
+                result.post_id = result.id.toString(); 
+            }
+            else if(result.status_id !== undefined) {
+                result.post_id = result.status_id.toString();
+            }
+            else if(result.link_id !== undefined) {
+                result.post_id = result.link_id.toString();
+            }
+            else {
+                result.post_id = result.post_id.toString();
+            }
+            
+            // This is a post from a friend to a wall, so extract the facebook ID from it
+            if(result.post_id && result.post_id.indexOf('_') > 0) {
+               result.post_id = result.post_id.replace('_', '/posts/');
+            }
+            
+            all_data.push(result);        
+        });
+        
     })
     
     all_data.sort(function(a,b){return b.time-a.time});
