@@ -151,8 +151,7 @@ function searchStatusMessages(search_text) {
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
 WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
-FROM stream WHERE source_id = me() AND actor_id IN (select uid2 from \
-friend where uid1 = me()) AND strpos(lower(message), '" + search_text + "') >= 0 \
+FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
 order by created_time DESC LIMIT 10000"
         
                  }}, function(response) {
