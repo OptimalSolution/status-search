@@ -96,11 +96,11 @@
                         <p class="list-group-item-text">These are the things people post onto your wall.</p>
                     </div>
                     <div class="list-group-item text-muted">
-                        <h4 class="list-group-item-heading">App Posts</h4>
+                        <h4 class="list-group-item-heading">App Posts (Coming Soon)</h4>
                         <p class="list-group-item-text">These are the status messages posted for you by apps like <strong>Instagram</strong>.</p>
                     </div>
                     <div class="list-group-item text-muted">
-                        <h4 class="list-group-item-heading">Post Comments</h4>
+                        <h4 class="list-group-item-heading">Post Comments (Coming Soon)</h4>
                         <p class="list-group-item-text">This is to help you remember what someone said in reference to your post.</p>
                     </div>
                 </div>
