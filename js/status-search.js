@@ -51,6 +51,14 @@ function showSearchResults(search_text, results) {
         $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + results.length + ' times.</div>');
         
         // Highlight the search text in each results and append them to the results section
+        
+        /**** INSERT after the 10th entry *****
+        
+        <a href="http://secure.hostgator.com/~affiliat/cgi-bin/affiliates/clickthru.cgi?id=themightyafro-"><img src="http://tracking.hostgator.com/img/Shared/728x90.gif" border="0"></a>
+        
+        <a href="http://secure.hostgator.com/~affiliat/cgi-bin/affiliates/clickthru.cgi?id=themightyafro-"><img src="http://tracking.hostgator.com/img/Shared/468x60.gif" border="0"></a>
+        
+        ****************/
         results.forEach(function(item) {
                 
             var pattern = new RegExp("(" + search_text + ")","gi"),
