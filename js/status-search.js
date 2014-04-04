@@ -32,6 +32,9 @@ function getPostType(item) {
     else if(item.link_id) {
         return 'link';
     }
+    else if(item.pid) {
+        return 'photo';
+    }
     else {
         return 'generic';
     }    
@@ -48,7 +51,7 @@ function showSearchResults(search_text, results) {
     if(results.length > 0) {
         
         // Tell them how many times their search text occurred
-        $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + results.length + ' times.</div>');
+        $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + ((results.length > 100) ? 'at <em><strong>LEAST</strong></em> ' : '') + results.length + ' times.</div>');
         
         // Highlight the search text in each results and append them to the results section
         results.forEach(function(item) {
@@ -65,7 +68,13 @@ function showSearchResults(search_text, results) {
                     case 'status':
                         $('.search_status .results').append('<a href="https://facebook.com/' + item.status_id + '" class="list-group-item" target="_blank" ><b>' + $.timeago(item.time * 1000) + ':</b> ' + item.message.replace(pattern,highlightHTML) + '</a>');
                         break;
-                    
+                    case 'photo':
+                        post_image = (item.src) ? item.src : 'img/link.jpg';
+                        $('.search_status .results').append('<div class="list-group-item media">\
+            <a class="pull-left" href="' + item.link + '" target="_blank">\
+            <img class="media-object" src="'+ post_image +'" alt="Post image" width="75"><small>' + $.timeago(item.created * 1000) + '</small></a>\
+            <div class="media-body">'+ item.caption.replace(pattern,highlightHTML) +'</div></div>')
+                        break;
                     case 'link':
                         post_image = (item.image_urls) ? item.image_urls[0] : item.picture;
                         post_image = (post_image) ? post_image : 'img/link.jpg';
@@ -142,17 +151,18 @@ function searchStatusMessages(search_text) {
     ***/
     
     FB.api('/fql', {q: {
-        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 0, 50", 
+        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             OR strpos(lower(title), '" + search_text + "') >= 0 \
             OR strpos(lower(summary), '" + search_text + "') >= 0) \
-        ORDER BY created_time DESC LIMIT 0, 50",
+        ORDER BY created_time DESC LIMIT 100",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
 WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
 FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
-order by created_time DESC LIMIT 10000"
+order by created_time DESC LIMIT 10000",
+        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
         
                  }}, function(response) {
 
@@ -186,7 +196,10 @@ function processMultiQueryResults(data) {
             else if(result.link_id !== undefined) {
                 result.post_id = result.link_id.toString();
             }
-            else {
+            else if(result.pid !== undefined) {
+                result.post_id = result.pid.toString();
+            }
+            else if(result.post_id !== undefined) {
                 result.post_id = result.post_id.toString();
             }
             
