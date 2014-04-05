@@ -32,6 +32,9 @@ function getPostType(item) {
     else if(item.link_id) {
         return 'link';
     }
+    else if(item.pid) {
+        return 'photo';
+    }
     else {
         return 'generic';
     }    
@@ -48,7 +51,7 @@ function showSearchResults(search_text, results) {
     if(results.length > 0) {
         
         // Tell them how many times their search text occurred
-        $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + results.length + ' times.</div>');
+        $('.search_status .results').append("<div class='text-center'><span class='glyphicon glyphicon-info-sign'></span> <strong><span class='text-danger'>\"" + search_text + '"</span></strong> was found ' + ((results.length > 100) ? 'at <em><strong>LEAST</strong></em> ' : '') + results.length + ' times.</div>');
         
         // Highlight the search text in each results and append them to the results section
         
@@ -76,6 +79,12 @@ function showSearchResults(search_text, results) {
                 
             switch(getPostType(item)) {
             
+                    case 'photo':
+                        item_link = item.link;
+                        item_message = item.caption.replace(pattern,highlightHTML);
+                        item_image = (item.src) ? '<img src="' + item.src + '" width="75" />' : 
+                                                  '<span style="font-size: 60px" class="glyphicon glyphicon-picture"></span>';
+                        break;
                     case 'link':
                         post_image = (item.image_urls) ? item.image_urls[0] : item.picture;
                         post_image = (post_image) ? post_image : 'img/link.jpg';
@@ -83,7 +92,8 @@ function showSearchResults(search_text, results) {
                         item_link = 'https://facebook.com/' + item.link_id;
                         item_message = item.owner_comment.replace(pattern,highlightHTML);
                         item_title = '<h4 class="media-heading">' + item.title.replace(pattern,highlightHTML) + '</h4>';
-                        item_image = '<img src="' + post_image + '" width="75" />';
+                        item_image = (post_image) ? '<img src="' + post_image + '" width="75" />' : 
+                                                    '<span style="font-size: 60px" class="glyphicon glyphicon-link"></span>';
                         break;
                     case 'status':
                     default:
@@ -167,19 +177,18 @@ function searchStatusMessages(search_text) {
     ***/
     
     FB.api('/fql', {q: {
-        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 0, 50", 
+        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             OR strpos(lower(title), '" + search_text + "') >= 0) \
-            ORDER BY created_time DESC LIMIT 0, 50",
+            ORDER BY created_time DESC LIMIT 0, 100",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
-WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)"
-        
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
         /*,
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
 FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
 order by created_time DESC LIMIT 10000"*/
-        
+        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
                  }}, function(response) {
 
         console.log(response)  
@@ -213,7 +222,10 @@ function processMultiQueryResults(data) {
             else if(result.link_id !== undefined) {
                 result.post_id = result.link_id.toString();
             }
-            else {
+            else if(result.pid !== undefined) {
+                result.post_id = result.pid.toString();
+            }
+            else if(result.post_id !== undefined) {
                 result.post_id = result.post_id.toString();
             }
             
