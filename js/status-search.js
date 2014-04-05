@@ -63,29 +63,46 @@ function showSearchResults(search_text, results) {
                 
             var pattern = new RegExp("(" + search_text + ")","gi"),
                 timestamp = (item.time) ? item.time : item.created_time,
-                owner_comment = '',
-                highlightHTML = "<strong><span class='text-danger'>$1</span></strong>";
-
-            owner_comment = owner_comment.replace(pattern,highlightHTML);
+                item_message = '',
+                item_image = '',
+                item_title = '',
+                html_block = '',
+                item_time = $.timeago(item.time * 1000),
+                highlightHTML = "<strong><span class='text-danger'>$1</span></strong>",
+                template = '<div class="list-group-item media" onclick="window.open(\'%ITEM_LINK%\', \'_blank\')">\
+                                <a class="pull-left" href="%ITEM_LINK%" target="_blank">\
+                                    <div title=\'' + JSON.stringify(item) + '\' class="text-center">%ITEM_IMAGE%<br/><small>%ITEM_TIME%</small></div>\
+                                </a><div class="media-body">%ITEM_TITLE%%ITEM_MESSAGE%</div></div>';
                 
             switch(getPostType(item)) {
             
-                    case 'status':
-                        $('.search_status .results').append('<a href="https://facebook.com/' + item.status_id + '" class="list-group-item" target="_blank" ><b>' + $.timeago(item.time * 1000) + ':</b> ' + item.message.replace(pattern,highlightHTML) + '</a>');
-                        break;
-                    
                     case 'link':
                         post_image = (item.image_urls) ? item.image_urls[0] : item.picture;
                         post_image = (post_image) ? post_image : 'img/link.jpg';
-                        $('.search_status .results').append('<div class="list-group-item media">\
-            <a class="pull-left" href="https://facebook.com/' + item.link_id + '" target="_blank">\
-            <img class="media-object" src="'+ post_image +'" alt="Post image" width="75"><small>' + $.timeago(item.time * 1000) + '</small></a>\
-            <div class="media-body"><h4 class="media-heading">'+ item.title.replace(pattern,highlightHTML) +'</h4>'+ item.owner_comment.replace(pattern,highlightHTML) +'</div></div>')
+                    
+                        item_link = 'https://facebook.com/' + item.link_id;
+                        item_message = item.owner_comment.replace(pattern,highlightHTML);
+                        item_title = '<h4 class="media-heading">' + item.title.replace(pattern,highlightHTML) + '</h4>';
+                        item_image = '<img src="' + post_image + '" width="75" />';
                         break;
+                    case 'status':
                     default:
-                        $('.search_status .results').append('<a href="https://facebook.com/' + item.post_id + '" class="list-group-item" target="_blank" ><b>' + $.timeago(item.time * 1000) + ':</b> ' + item.message.replace(pattern,highlightHTML) + '</a>');
-                        break;
+                        item_link = 'https://facebook.com/' + item.post_id;
+                        item_image = '<span style="font-size: 60px" class="glyphicon glyphicon-comment"></span>';
+                        item_message = item.message.replace(pattern, highlightHTML);
             }
+
+            // Special treatment: image posts
+            if(item.type && item.type == 'photo') {
+                item_image = '<span style="font-size: 60px" class="glyphicon glyphicon-camera"></span>';
+            }
+            
+            html_block = template.replace(/%ITEM_LINK%/g, item_link);
+            html_block = html_block.replace('%ITEM_IMAGE%', item_image);
+            html_block = html_block.replace('%ITEM_TITLE%', item_title);
+            html_block = html_block.replace('%ITEM_MESSAGE%', item_message);
+            html_block = html_block.replace('%ITEM_TIME%', item_time);
+            $('.search_status .results').append(html_block);
         });
     }
     else {
@@ -142,7 +159,7 @@ var searches = 0;
 function searchStatusMessages(search_text) {
     
     search_text = search_text.toLowerCase();
-    ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);
+    //ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);
 
     /** News Feed search
     SELECT call_to_action, message, actor_id, post_id, source_id, type, app_id, created_time, description FROM stream WHERE filter_key = 'nf' AND strpos(lower(message), 'bridal') >= 0
@@ -153,14 +170,15 @@ function searchStatusMessages(search_text) {
         status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 0, 50", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
-            OR strpos(lower(title), '" + search_text + "') >= 0 \
-            OR strpos(lower(summary), '" + search_text + "') >= 0) \
-        ORDER BY created_time DESC LIMIT 0, 50",
+            OR strpos(lower(title), '" + search_text + "') >= 0) \
+            ORDER BY created_time DESC LIMIT 0, 50",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
-WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)"
+        
+        /*,
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
 FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
-order by created_time DESC LIMIT 10000"
+order by created_time DESC LIMIT 10000"*/
         
                  }}, function(response) {
 
@@ -174,9 +192,10 @@ function processMultiQueryResults(data) {
     var all_data = [];
     data.forEach(function(result_set) {
         
+        // Consolidate the variables for easy output later
         result_set.fql_result_set.forEach(function(result) {
             
-            // Consolidate all of the time variables into one for easy sorting
+            /****** Consolidation: Time variables *******/
             if(result.timestamp !== undefined) {   
                 result.time = result.timestamp; 
             }
@@ -184,7 +203,7 @@ function processMultiQueryResults(data) {
                 result.time = result.created_time;
             }
             
-            // Consolidate all of the post_id variables into one for easy linking
+            /****** Consolidation: Post ID variables *******/
             if(result.id !== undefined) {   
                 result.post_id = result.id.toString(); 
             }
@@ -201,6 +220,14 @@ function processMultiQueryResults(data) {
             // This is a post from a friend to a wall, so extract the facebook ID from it
             if(result.post_id && result.post_id.indexOf('_') > 0) {
                result.post_id = result.post_id.replace('_', '/posts/');
+            }
+            
+            /****** Consolidation: Message variables *******/
+            if(result.owner_comment !== undefined) {   
+                result.message = result.owner_comment; 
+            }
+            else if(result.caption !== undefined) {
+                result.message = result.caption; 
             }
             
             all_data.push(result);        
