@@ -9,6 +9,10 @@
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+      <style type="text/css">
+      <!--
+          .btn-visit-post { position: absolute; bottom: 5px; right: 5px }
+      --></style>
   </head>
   <body>
     <div id="fb-root"></div>
@@ -95,8 +99,8 @@
                         <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> A Friend's Post</h4>
                         <p class="list-group-item-text">These are the things people post onto your wall.</p>
                     </div>
-                    <div class="list-group-item text-muted">
-                        <h4 class="list-group-item-heading">App Posts (Coming Soon)</h4>
+                    <div class="list-group-item">
+                        <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> App Posts</h4>
                         <p class="list-group-item-text">These are the status messages posted for you by apps like <strong>Instagram</strong>.</p>
                     </div>
                     <div class="list-group-item text-muted">
@@ -125,7 +129,7 @@
         // Check if the current user is logged in and has authorized the app
         window.fbAsyncInit = function() {
 
-            console.log('FB: Loaded');
+            console.log('FB: Loading.');
             FB.init({
                 appId      : '338414012939778',
                 status     : true, // check login status

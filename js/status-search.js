@@ -1,6 +1,8 @@
 // Login in the current user via Facebook and ask for email permission
 var default_scope = 'read_stream',
-    current_scope = default_scope
+    current_scope = default_scope,
+    loggedIntoFB = false,
+    waitingOnLogin = false;
 
 function authUser() {
     FB.login(isLoggedIn, {scope: current_scope});
@@ -10,16 +12,19 @@ function isLoggedIn(response) {
     
     if(response) {
         if(!validFaceBookLogin(response)) {
-            console.log("isLoggedIn: Not logged in");    
+            console.log("Not logged into FB, show the login button.");    
             showLoginButton();
         }
         else {
+            loggedIntoFB = true;
+            console.log('Logged into FB!');
             hideLoginButton();
             hideAlert();
         }
     }
     else {
-        console.log("isLoggedIn: Not logged in from before");    
+        // TODO: Extend the access token
+        console.log("Checking for saved FB accessToken...");    
         return (getCookie('accessToken') && getCookie('uid'))
     }
 }
@@ -72,14 +77,15 @@ function showSearchResults(search_text, results) {
                 html_block = '',
                 item_time = $.timeago(item.time * 1000),
                 highlightHTML = "<strong><span class='text-danger'>$1</span></strong>",
-                template = '<div class="list-group-item media" onclick="window.open(\'%ITEM_LINK%\', \'_blank\')">\
+                template = '<div class="list-group-item media">\
                                 <a class="pull-left" href="%ITEM_LINK%" target="_blank">\
-                                    <div title=\'' + JSON.stringify(item) + '\' class="text-center">%ITEM_IMAGE%<br/><small>%ITEM_TIME%</small></div>\
-                                </a><div class="media-body">%ITEM_TITLE%%ITEM_MESSAGE%</div></div>';
+                                    <div title="%ITEM_HOVER%" class="text-center">%ITEM_IMAGE%<br/><small>%ITEM_TIME%</small></div>\
+                                </a><div class="media-body">%ITEM_TITLE%%ITEM_MESSAGE%</div><a class="pull-right" href="%ITEM_LINK%" target="_blank"><button type="button" class="btn btn-xs btn-info btn-visit-post">Visit Post <span class="glyphicon glyphicon-play"></span></button></a></div>';
                 
             switch(getPostType(item)) {
             
                     case 'photo':
+                        item_hover = 'Photo post';
                         item_link = item.link;
                         item_message = item.caption.replace(pattern,highlightHTML);
                         item_image = (item.src) ? '<img src="' + item.src + '" width="75" />' : 
@@ -89,6 +95,7 @@ function showSearchResults(search_text, results) {
                         post_image = (item.image_urls) ? item.image_urls[0] : item.picture;
                         post_image = (post_image) ? post_image : 'img/link.jpg';
                     
+                        item_hover = 'Link post';
                         item_link = 'https://facebook.com/' + item.link_id;
                         item_message = item.owner_comment.replace(pattern,highlightHTML);
                         item_title = '<h4 class="media-heading">' + item.title.replace(pattern,highlightHTML) + '</h4>';
@@ -98,6 +105,7 @@ function showSearchResults(search_text, results) {
                     case 'status':
                     default:
                         item_link = 'https://facebook.com/' + item.post_id;
+                        item_hover = 'Status post';
                         item_image = '<span style="font-size: 60px" class="glyphicon glyphicon-comment"></span>';
                         item_message = item.message.replace(pattern, highlightHTML);
             }
@@ -105,10 +113,18 @@ function showSearchResults(search_text, results) {
             // Special treatment: image posts
             if(item.type && item.type == 'photo') {
                 item_image = '<span style="font-size: 60px" class="glyphicon glyphicon-camera"></span>';
+                item_hover = 'Image post';
+            }
+            
+            // Special treatment: shared posts
+            if(item.actor_id) {
+                item_image = '<span style="font-size: 60px" class="glyphicon glyphicon-arrow-left"></span>';
+                item_hover = 'Link shared on your wall';
             }
             
             html_block = template.replace(/%ITEM_LINK%/g, item_link);
             html_block = html_block.replace('%ITEM_IMAGE%', item_image);
+            html_block = html_block.replace('%ITEM_HOVER%', item_hover);
             html_block = html_block.replace('%ITEM_TITLE%', item_title);
             html_block = html_block.replace('%ITEM_MESSAGE%', item_message);
             html_block = html_block.replace('%ITEM_TIME%', item_time);
@@ -133,8 +149,8 @@ function hideAlert() {
 
 function runSearch() {
     
-    console.log("Running search on "+ $('#search_text').val());
-    hideAlert();
+    
+    hideAlert();    
     if(!isLoggedIn()) {
         // Tell them we couldn't find anything
         showAlert('Please connect to Facebook first!');
@@ -150,6 +166,7 @@ function runSearch() {
         $('.search_status .results').html('<div class="progress progress-striped active">\
   <div class="progress-bar progress-bar-info col-lg-12" role="progressbar" aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">Searching...\
     <span class="sr-only">Searching...</span></div></div>');
+        console.log("Running search on "+ $('#search_text').val());
         searchStatusMessages($('#search_text').val())
     }
     
@@ -170,11 +187,6 @@ function searchStatusMessages(search_text) {
     
     search_text = search_text.toLowerCase();
     //ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);
-
-    /** News Feed search
-    SELECT call_to_action, message, actor_id, post_id, source_id, type, app_id, created_time, description FROM stream WHERE filter_key = 'nf' AND strpos(lower(message), 'bridal') >= 0
-    
-    ***/
     
     FB.api('/fql', {q: {
         status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
@@ -184,10 +196,10 @@ function searchStatusMessages(search_text) {
             ORDER BY created_time DESC LIMIT 0, 100",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
 WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
-        /*,
+        
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
 FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
-order by created_time DESC LIMIT 10000"*/
+order by created_time DESC LIMIT 100",
         photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
                  }}, function(response) {
 
@@ -210,6 +222,9 @@ function processMultiQueryResults(data) {
             }
             else if(result.created_time !== undefined) {
                 result.time = result.created_time;
+            }
+            else if(result.created !== undefined) {
+                result.time = result.created;
             }
             
             /****** Consolidation: Post ID variables *******/
