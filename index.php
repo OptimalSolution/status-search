@@ -12,14 +12,18 @@
       <style type="text/css">
       <!--
           .btn-visit-post { position: absolute; bottom: 5px; right: 5px }
+          #hash_tag_area { display: none; margin-bottom: 10px; height: 20px; margin-bottom: 10px }
+          .hash_tag_label { float: left; font-weight: bold }
+          .hashtag { margin-left: 20px; float: left; padding-bottom: 10px }
+          #hastags a {  } 
       --></style>
   </head>
   <body>
     <div id="fb-root"></div>
     <div class="container">
       
-        <h1>Status Search <span class="badge" style="position: relative; bottom: 15px">Beta</span></h1>
-        <p class="lead">Want to find that link, video or status update you posted a long time ago? Type in key words and find it!</p>
+        <h1>Status Search</h1>
+        <p class="lead">Want to find that link, video or status update you posted a long time ago? Type in key words or <strong>#hashtags</strong> and find it!</p>
           <p class="lead login-message" style="display:none">First thing's first:        
             <button id="login-button" type="button" onclick="authUser();" class="btn btn-primary btn-med" style="position: relative; bottom: 3px"><span class="glyphicon glyphicon-hand-right"></span>&nbsp; Connect to Facebook</button>
           </p>
@@ -33,7 +37,10 @@
                 <div class="panel-body">
                   <div class="row">
                       <div class="col-lg-12">
-                        <div class="input-group">
+                        <div id="hash_tag_area">
+                            <span class='hash_tag_label'>Your most used hashtags:</span> <span id="hashtags"></span>
+                        </div>
+                        <div class="input-group" style="clear: left">
                           <input id="search_text" type="text" class="form-control" placeholder="Type in a word here...">
                           <span class="input-group-btn">
                             <button id="search_status_btn" class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search"></span> Search</button>
@@ -103,10 +110,6 @@
                         <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> App Posts</h4>
                         <p class="list-group-item-text">These are the status messages posted for you by apps like <strong>Instagram</strong>.</p>
                     </div>
-                    <div class="list-group-item text-muted">
-                        <h4 class="list-group-item-heading">Post Comments (Coming Soon)</h4>
-                        <p class="list-group-item-text">This is to help you remember what someone said in reference to your post.</p>
-                    </div>
                 </div>
               </div>
             </div><!-- /.col-sm-4 -->
@@ -134,12 +137,11 @@
                 appId      : '338414012939778',
                 status     : true, // check login status
                 cookie     : true, // enable cookies to allow the server to access the session
-                xfbml      : true  // parse XFBML
+                xfbml      : false  // parse XFBML
             });
 
             FB.getLoginStatus(isLoggedIn);
         };
-        //$('.alert').hide();
     </script>
       
       <script>

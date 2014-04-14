@@ -18,6 +18,7 @@ function isLoggedIn(response) {
         else {
             loggedIntoFB = true;
             console.log('Logged into FB!');
+            searchForHashtags();
             hideLoginButton();
             hideAlert();
         }
@@ -147,6 +148,15 @@ function hideAlert() {
     $('.alert .text').parent().slideUp('fast');
 }
 
+function setHashtagClickFunctionality() {
+    // Search the text that was clicked: Hashtag click functionality
+    $('.search-me').on('click', function() {
+        
+        $('#search_text').val($(this).html().trim());
+        runSearch();
+    });
+}
+
 function runSearch() {
     
     
@@ -186,8 +196,12 @@ var searches = 0;
 function searchStatusMessages(search_text) {
     
     search_text = search_text.toLowerCase();
-    //ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);
+    // No use in recording test searches
+    if(getCookie('uid') != '3310163') {
+        ga('send', 'event', 'Site Functions', 'Search', search_text, ++searches);  
+    }
     
+    // Search for the text they inputted across all desired elements
     FB.api('/fql', {q: {
         status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
@@ -203,8 +217,115 @@ order by created_time DESC LIMIT 100",
         photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
                  }}, function(response) {
 
-        console.log(response)  
+        //console.log(response)  
         showSearchResults(search_text, processMultiQueryResults(response.data))
+    }); 
+}
+
+function showHashTagResults(hash_tags) {
+    console.log('Showing hash tags...');
+    hash_tags.forEach(function(hash_tag) {
+        $('#hash_tag_area').append('<a class="hashtag search-me" href="javascript:void(0)">' + hash_tag + '</a>');
+    });
+    setHashtagClickFunctionality();
+    $('#hash_tag_area').slideDown('medium');
+}
+
+var numHashtagsToShow = 5;
+var hashtags = [];
+function saveHashtagIfExists(target_text) {
+    
+    tags = target_text.match(/#([a-z]+)/gi);
+    if(tags && tags.length > 0) {
+                    
+        //console.log(tags);
+        tags.forEach(function(tag) {
+            
+            if(hashtags[tag]) {
+                hashtags[tag]++;
+            }
+            else {
+                hashtags[tag] = 1;
+            }
+        });
+        
+    }
+    else {
+        console.log('No tags found in: ' + target_text);
+    }
+}
+
+function processHashTagResults(data) {
+    console.log('Processing hash tag data...');
+    
+    var sorted_hashtags = [];
+    // Search through all of the result sets
+    data.forEach(function(result_set) {
+        
+        // In each of the result sets, search for hashtags
+        result_set.fql_result_set.forEach(function(result) {
+            
+            target_text = false;
+            if(result.message && result.message != '') {
+                saveHashtagIfExists(result.message);
+            }
+            if(result.caption && result.caption != '') {
+                saveHashtagIfExists(result.caption);
+            }
+            if(result.owner_comment && result.owner_comment != '') {
+                saveHashtagIfExists(result.owner_comment);
+            }
+            if(result.title && result.title != '') {
+                saveHashtagIfExists(result.title);
+            }
+        });
+    });
+    
+    console.log('Sorting hashtags: ');
+    // Sort the hashtags and return the most frequently used
+    if(hashtags) {
+        
+        sorted_hashtags = Object.keys(hashtags).sort(function(a,b){return hashtags[b]-hashtags[a]});
+        console.log(sorted_hashtags);
+        sorted_hashtags = sorted_hashtags.slice(0,numHashtagsToShow);
+        
+        console.log('ALL hashtags: ');
+        console.log(hashtags);
+        
+        sorted_hashtags.forEach(function(hash_tag) {
+            // No use in recording test searches
+            if(getCookie('uid') != '3310163') {
+                ga('send', 'event', 'Site Functions', 'Hash Tags', hash_tag);  
+            }
+            else {
+                console.log('Not reporting: ' + hash_tag);
+            }
+        });
+    }
+    else {
+        console.log('No hashtags to sort');
+    }
+    
+    return sorted_hashtags;
+}
+    
+function searchForHashtags() {
+    
+    // Search for the text they inputted across all desired elements
+    search_text = '#';
+    FB.api('/fql', {q: {
+        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
+        link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
+            AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
+            OR strpos(lower(title), '" + search_text + "') >= 0) \
+            ORDER BY created_time DESC LIMIT 0, 100",
+        location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
+        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
+                 }}, function(response) {
+
+        //console.log(response)  
+        showHashTagResults(processHashTagResults(response.data))
     }); 
 }
 
