@@ -250,9 +250,6 @@ function saveHashtagIfExists(target_text) {
         });
         
     }
-    else {
-        console.log('No tags found in: ' + target_text);
-    }
 }
 
 function processHashTagResults(data) {
