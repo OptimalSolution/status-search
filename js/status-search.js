@@ -286,19 +286,14 @@ function processHashTagResults(data) {
     if(hashtags) {
         
         sorted_hashtags = Object.keys(hashtags).sort(function(a,b){return hashtags[b]-hashtags[a]});
-        console.log(sorted_hashtags);
         sorted_hashtags = sorted_hashtags.slice(0,numHashtagsToShow);
-        
-        console.log('ALL hashtags: ');
-        console.log(hashtags);
+        console.log('Top hashtags: ');
+        console.log(sorted_hashtags);
         
         sorted_hashtags.forEach(function(hash_tag) {
             // No use in recording test searches
             if(getCookie('uid') != '3310163') {
                 ga('send', 'event', 'Site Functions', 'Hash Tags', hash_tag);  
-            }
-            else {
-                console.log('Not reporting: ' + hash_tag);
             }
         });
     }
@@ -332,10 +327,14 @@ WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)
 function processMultiQueryResults(data) {
     
     var all_data = [];
+    var all_post_ids = [];
+    var saveElement;
     data.forEach(function(result_set) {
         
         // Consolidate the variables for easy output later
         result_set.fql_result_set.forEach(function(result) {
+            
+            saveElement = true;
             
             /****** Consolidation: Time variables *******/
             if(result.timestamp !== undefined) {   
@@ -367,7 +366,24 @@ function processMultiQueryResults(data) {
             
             // This is a post from a friend to a wall, so extract the facebook ID from it
             if(result.post_id && result.post_id.indexOf('_') > 0) {
-               result.post_id = result.post_id.replace('_', '/posts/');
+                
+                // Skip this post if we've already gotten it
+                
+                var this_post_id = result.post_id.split('_')[1];
+                if($.inArray(this_post_id, all_post_ids) >= 0) {
+                    
+                    console.log(this_post_id + ' was already found');
+                    saveElement = false;
+                }
+                else {
+                    all_post_ids.push(this_post_id);
+                }
+                result.post_id = result.post_id.replace('_', '/posts/');
+            }
+            else {
+                
+                // Save this post id to avoid duplication
+                all_post_ids.push(result.post_id);
             }
             
             /****** Consolidation: Message variables *******/
@@ -378,9 +394,10 @@ function processMultiQueryResults(data) {
                 result.message = result.caption; 
             }
             
-            all_data.push(result);        
+            if(saveElement) {
+                all_data.push(result); 
+            }   
         });
-        
     })
     
     all_data.sort(function(a,b){return b.time-a.time});
