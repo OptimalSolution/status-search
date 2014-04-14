@@ -306,14 +306,14 @@ function searchForHashtags() {
     // Search for the text they inputted across all desired elements
     search_text = '#';
     FB.api('/fql', {q: {
-        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
+        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100000000", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             OR strpos(lower(title), '" + search_text + "') >= 0) \
-            ORDER BY created_time DESC LIMIT 0, 100",
+            ORDER BY created_time DESC LIMIT 100000000",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
-WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
-        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0) LIMIT 100000000",
+        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100000000"
                  }}, function(response) {
 
         //console.log(response)  
