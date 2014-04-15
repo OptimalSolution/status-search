@@ -195,6 +195,7 @@ $('#search_text').keyup(function(event){
 var searches = 0;
 function searchStatusMessages(search_text) {
     
+    og_search_text = search_text;
     search_text = search_text.toLowerCase();
     // No use in recording test searches
     if(getCookie('uid') != '3310163') {
@@ -203,22 +204,22 @@ function searchStatusMessages(search_text) {
     
     // Search for the text they inputted across all desired elements
     FB.api('/fql', {q: {
-        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100", 
+        status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100000000", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
             AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             OR strpos(lower(title), '" + search_text + "') >= 0) \
-            ORDER BY created_time DESC LIMIT 0, 100",
+            ORDER BY created_time DESC LIMIT 100000000",
         location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
-WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0)",
+WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0) LIMIT 100000000",
         
         wall_post_results: "SELECT message, actor_id, post_id, source_id, created_time \
 FROM stream WHERE source_id = me() AND strpos(lower(message), '" + search_text + "') >= 0 \
-order by created_time DESC LIMIT 100",
-        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100"
+order by created_time DESC LIMIT 100000000",
+        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100000000"
                  }}, function(response) {
 
         //console.log(response)  
-        showSearchResults(search_text, processMultiQueryResults(response.data))
+        showSearchResults(og_search_text, processMultiQueryResults(response.data))
     }); 
 }
 
@@ -235,10 +236,11 @@ var numHashtagsToShow = 5;
 var hashtags = [];
 function saveHashtagIfExists(target_text) {
     
-    tags = target_text.match(/#([a-z]+)/gi);
+    tags = target_text.match(/#([a-z0-9][a-z0-9]+)/gi);
     if(tags && tags.length > 0) {
                     
-        //console.log(tags);
+        console.log('Searched: ' + target_text + ' and found: ');
+        console.log(tags);
         tags.forEach(function(tag) {
             
             if(hashtags[tag]) {
@@ -279,6 +281,8 @@ function processHashTagResults(data) {
     });
     
     console.log('Sorting hashtags: ');
+    console.log(hashtags);
+    
     // Sort the hashtags and return the most frequently used
     if(hashtags) {
         
@@ -308,12 +312,11 @@ function searchForHashtags() {
     FB.api('/fql', {q: {
         status_results: "SELECT status_id, message, comment_info, source, time  FROM status WHERE uid=me() AND strpos(lower(message), '" + search_text + "') >= 0 ORDER BY time DESC LIMIT 100000000", 
         link_results: "SELECT link_id, caption, image_urls, owner_comment, title, url, picture, created_time  FROM link WHERE owner=me() \
-            AND (strpos(lower(owner_comment), '" + search_text + "') >= 0 \
-            OR strpos(lower(title), '" + search_text + "') >= 0) \
+            AND strpos(lower(owner_comment), '" + search_text + "') >= 0 \
             ORDER BY created_time DESC LIMIT 100000000",
-        location_results: "SELECT message, id, coords, type, app_id, timestamp FROM location_post \
+        location_results: "SELECT message, id, coords, type, timestamp FROM location_post \
 WHERE author_uid = me() AND (strpos(lower(message), '" + search_text + "') >= 0) LIMIT 100000000",
-        photo_results: "select pid, created, src, caption, caption_tags, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100000000"
+        photo_results: "select pid, created, src, caption, link from photo where owner = me() AND strpos(lower(caption), '" + search_text + "') >= 0 LIMIT 100000000"
                  }}, function(response) {
 
         //console.log(response)  
