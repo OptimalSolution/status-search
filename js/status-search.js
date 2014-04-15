@@ -239,8 +239,8 @@ function saveHashtagIfExists(target_text) {
     tags = target_text.match(/#([a-z0-9][a-z0-9]+)/gi);
     if(tags && tags.length > 0) {
                     
-        console.log('Searched: ' + target_text + ' and found: ');
-        console.log(tags);
+        //console.log('Searched: ' + target_text + ' and found: ');
+        //console.log(tags);
         tags.forEach(function(tag) {
             
             if(hashtags[tag]) {
@@ -274,14 +274,11 @@ function processHashTagResults(data) {
             if(result.owner_comment && result.owner_comment != '') {
                 saveHashtagIfExists(result.owner_comment);
             }
-            if(result.title && result.title != '') {
-                saveHashtagIfExists(result.title);
-            }
         });
     });
     
     console.log('Sorting hashtags: ');
-    console.log(hashtags);
+    //console.log(hashtags);
     
     // Sort the hashtags and return the most frequently used
     if(hashtags) {
