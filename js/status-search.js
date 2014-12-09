@@ -159,11 +159,11 @@ function setHashtagClickFunctionality() {
 
 function runSearch() {
     
-    
     hideAlert();    
     if(!isLoggedIn()) {
         // Tell them we couldn't find anything
-        showAlert('Please connect to Facebook first!');
+        showAlert('Logging into Facebook...');
+		authUser();
     }
     // Only run non-blank searches
     else if($('#search_text').val().trim() == '') {
