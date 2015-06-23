@@ -105,10 +105,6 @@
                         <p class="list-group-item-text">These is so you can search for the title of the link you posted (e.g., The name of a YouTube video).</p>
                     </div>
                     <div class="list-group-item">
-                        <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> Check-ins</h4>
-                        <p class="list-group-item-text">These are the places you check into or were checked into by friends.</p>
-                    </div>
-                    <div class="list-group-item">
                         <h4 class="list-group-item-heading"><span class="glyphicon glyphicon-ok text-success"></span> A Friend's Post</h4>
                         <p class="list-group-item-text">These are the things people post onto your wall.</p>
                     </div>
