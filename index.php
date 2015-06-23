@@ -4,6 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="fb:app_id" content="338414012939778" />
+    <meta property="og:site_name" content="Status Search"/>
+    <meta property="og:image" content="http://sterlingonlinesolutions.com/status-search/img/logo-small.png"/>
+    <meta property="og:title" content="Status Search: Search Your Status Updates, Links and Posts"/>
+    <meta property="og:description" content="Want to find that link, video or status update you posted? Type in key words or #hashtags and find it! No more scrolling through your feed -- just search!"/>
+    <meta property="og:url" content="http://sterlingonlinesolutions.com/status-search/"/>
     <title>Status Search</title>
 
     <!-- Latest compiled and minified CSS -->
@@ -15,21 +21,21 @@
           #hash_tag_area { display: none; margin-bottom: 10px; height: 20px; margin-bottom: 10px }
           .hash_tag_label { float: left; font-weight: bold }
           .hashtag { margin-left: 20px; float: left; padding-bottom: 10px }
-          #hastags a {  } 
+          #hastags a {  }
       --></style>
   </head>
   <body>
     <div id="fb-root"></div>
     <div class="container">
-      
-        <h1>Status Search</h1>
+
+        <h1><img style="bottom: 5px; position: relative;" width="45" src="img/logo-small.png"> Status Search**</h1>
         <p class="lead">Want to find that link, video or status update you posted a long time ago? Type in key words or <strong>#hashtags</strong> and find it!</p>
-          <p class="lead login-message" style="display:none">First thing's first:        
-            <button id="login-button" type="button" onclick="authUser();" class="btn btn-primary btn-med" style="position: relative; bottom: 3px"><span class="glyphicon glyphicon-hand-right"></span>&nbsp; Connect to Facebook</button>
+          <p class="lead login-message" style="display:none">First thing's first:
+            <img id="login-button" type="button" onclick="authUser();" src="img/connect_facebook.png" style="cursor: pointer"/>
           </p>
           <!-- Statuses -->
           <div class="row search_status">
-            <div class="col-sm-8">          
+            <div class="col-sm-8">
               <div class="panel panel-info">
                 <div class="panel-heading">
                   <h3 class="panel-title">Search for posts by typing in a word you can remember:</h3>
@@ -47,8 +53,8 @@
                           </span>
                         </div><!-- /input-group -->
                       </div>
-                          
-                          <!-- Sorting button 
+
+                          <!-- Sorting button
                     <div class="col-lg-3">
                         <div class="btn-group">
                           <button type="button" class="btn btn-info">Sorting</button>
@@ -69,14 +75,14 @@
               </div>
               <div class="alert alert-danger" style="display: none"><span class="text"></span></div>
             </div><!-- /.col-sm-4 -->
-              
-              <div class="col-sm-4"><!-- Ads -->          
+
+              <div class="col-sm-4"><!-- Ads -->
                   <div style="padding-bottom: 10px"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- Status Search - Sidebar -->
+<!-- Status Search - Sidebar
 <ins class="adsbygoogle"
      style="display:inline-block;width:300px;height:250px"
      data-ad-client="ca-pub-9980664734667730"
-     data-ad-slot="9615421533"></ins>
+     data-ad-slot="9615421533"></ins> -->
 <script>
 (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -117,7 +123,7 @@
     </div><!-- /.container -->
       <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.3.1/jquery.timeago.min.js"></script>      
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.3.1/jquery.timeago.min.js"></script>
     <script src="js/status-search.js"></script>
     <script>
        // Load the SDK asynchronously
@@ -137,28 +143,29 @@
                 appId      : '338414012939778',
                 status     : true, // check login status
                 cookie     : true, // enable cookies to allow the server to access the session
-                xfbml      : false  // parse XFBML
+                xfbml      : false,  // parse XFBML
+                version    : 'v2.0'
             });
 
             FB.getLoginStatus(isLoggedIn);
         };
     </script>
-      
+
       <script>
           // GA Tracking
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-        
+
           ga('create', 'UA-12789796-5', 'sterlingonlinesolutions.com');
           ga('send', 'pageview');
       </script>
-      
+
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <!-- Latest compiled and minified JavaScript -->
-      
+
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-      
+
   </body>
 </html>
